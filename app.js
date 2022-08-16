@@ -14,15 +14,16 @@ else if (fileName.includes('/')) throw new Error("PLEASE DON'T INCLUDE A PATH, J
 
 (async () => {
     try {
-
         let lastWord = '';
         let lastWordHyphenated = false;
+
+        const bannedWords = await readFile('./banned-words.json', 'json');
 
         await writeFile(
             `./outputs/${fileName}.json`,
             JSON.stringify(
                 Object.entries((await readFile(`./inputs/${fileName}.txt`, 'utf8')).replace(/[.,":?”“!‘]|\’|\[|\]|\(|\).*/g, '').split(/[\s,—]+/).reduce((stats, word) => {
-                    // if (!isNaN(word) && !safeNumbers.includes(word)) return stats;
+                    if (bannedWords.includes(word)) return stats;
 
                     //Handle words that are hyphenated
                     if (lastWordHyphenated) {
