@@ -6,8 +6,6 @@ if (!fileName) throw new Error("PLEASE PROVIDE AN INPUT FILE");
 else if (fileName.endsWith('.txt') || fileName.endsWith('.json')) throw new Error("PLEASE DON'T PROVIDE A FILE EXTENSION");
 else if (fileName.includes('/')) throw new Error("PLEASE DON'T INCLUDE A PATH, JUST THE FILE NAME");
 
-// const safeNumbers = process.argv[3].split(" ");
-
 // HYPHEN -
 //EN DASH –
 //EM DASH —
@@ -17,13 +15,13 @@ else if (fileName.includes('/')) throw new Error("PLEASE DON'T INCLUDE A PATH, J
         let lastWord = '';
         let lastWordHyphenated = false;
 
-        const bannedWords = await readFile('./banned-words.json', 'json');
+        const bannedWords = await readFile('./banned-words.txt', 'utf8');
 
         await writeFile(
             `./outputs/${fileName}.json`,
             JSON.stringify(
                 Object.entries((await readFile(`./inputs/${fileName}.txt`, 'utf8')).replace(/[.,":?”“!‘]|\’|\[|\]|\(|\).*/g, '').split(/[\s,—]+/).reduce((stats, word) => {
-                    if (bannedWords.includes(word)) return stats;
+                    if (!isNaN(word) || bannedWords.includes(word.toLowerCase())) return stats;
 
                     //Handle words that are hyphenated
                     if (lastWordHyphenated) {
@@ -37,16 +35,10 @@ else if (fileName.includes('/')) throw new Error("PLEASE DON'T INCLUDE A PATH, J
                         return stats;
                     }
 
-                    // if (word.endsWith('——')) word = word.slice(0, -2);
-                    // if (word.endsWith('—')) word = word.slice(0, -2);
-
                     // if (word.includes('-')) console.log(`Hyphenated word: ${word}`);
                     // if (word.includes('–')) console.log(`En dash word: ${word}`);
 
                     if (word.includes('—')) console.log(`EM dash word: ${word}`);
-                    // word = word.split('—');
-
-                    // if (word.includes('-') && !word.includes('—')) console.log(word)
 
                     word = word.charAt(0).toUpperCase() + word.slice(1);
 
