@@ -6,39 +6,56 @@ if (!fileName) throw new Error("PLEASE PROVIDE AN INPUT FILE");
 else if (fileName.endsWith('.txt') || fileName.endsWith('.json')) throw new Error("PLEASE DON'T PROVIDE A FILE EXTENSION");
 else if (fileName.includes('/')) throw new Error("PLEASE DON'T INCLUDE A PATH, JUST THE FILE NAME");
 
+// const safeNumbers = process.argv[3].split(" ");
+
+// HYPHEN -
+//EN DASH –
+//EM DASH —
+
 (async () => {
     try {
-        let outputData = {};
 
-        let parseData = (await readFile(`./inputs/${fileName}.txt`, 'utf8')).replace(/[.,":?”“!‘—]|\’.*/g, '').split(/\s/);
+        let lastWord = '';
+        let lastWordHyphenated = false;
 
-        parseData.forEach((word, index) => {
-            if (!isNaN(word)) return;
+        await writeFile(
+            `./outputs/${fileName}.json`,
+            JSON.stringify(
+                Object.entries((await readFile(`./inputs/${fileName}.txt`, 'utf8')).replace(/[.,":?”“!‘]|\’|\[|\]|\(|\).*/g, '').split(/[\s,—]+/).reduce((stats, word) => {
+                    // if (!isNaN(word) && !safeNumbers.includes(word)) return stats;
 
-            console.log(word.includes('\n'))
+                    //Handle words that are hyphenated
+                    if (lastWordHyphenated) {
+                        word = lastWord + word;
+                        lastWordHyphenated = false;
+                    }
 
-            // if (word[0] === "-" && index !== 0) {
-            //     word = parseData[index - 1] + word.slice(1);
-            //     delete outputData[parseData[index - 1].charAt(0).toUpperCase() + parseData[index - 1].slice(1)];
-            // }
+                    if (word.endsWith('-')) {
+                        lastWord = word.slice(0, -1);
+                        lastWordHyphenated = true;
+                        return stats;
+                    }
 
-            word = word.charAt(0).toUpperCase() + word.slice(1);
+                    // if (word.endsWith('——')) word = word.slice(0, -2);
+                    // if (word.endsWith('—')) word = word.slice(0, -2);
 
-            if (word in outputData) outputData[word]++;
-            else outputData[word] = 1;
-        })
+                    // if (word.includes('-')) console.log(`Hyphenated word: ${word}`);
+                    // if (word.includes('–')) console.log(`En dash word: ${word}`);
 
-        outputData = Object.entries(outputData).sort((a, b) => {
-            if (a[1] < b[1]) {
-                return 1;
-            } else if (a[1] > b[1]) {
-                return -1;
-            } else {
-                return 0;
-            }
-        }).reverse()
+                    if (word.includes('—')) console.log(`EM dash word: ${word}`);
+                    // word = word.split('—');
 
-        await writeFile(`./outputs/${fileName}.json`, JSON.stringify(outputData));
+                    // if (word.includes('-') && !word.includes('—')) console.log(word)
+
+                    word = word.charAt(0).toUpperCase() + word.slice(1);
+
+                    if (word in stats) stats[word]++;
+                    else stats[word] = 1;
+
+                    return stats;
+                }, {})).sort((a, b) => b[1] - a[1]).reverse()
+            )
+        );
     } catch (error) {
         console.error(error)
     }
