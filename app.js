@@ -17,11 +17,12 @@ else if (fileName.includes('/')) throw new Error("PLEASE DON'T INCLUDE A PATH, J
 
 (async () => {
     try {
-        const rawData = (await readFile(`./inputs/${fileName}.txt`, 'utf8')).replace(/[.,":?”“!‘;']|\’|\[|\]|\(|\).*/g, '').split(/[\s]|--|―|-/);
+        // |--
+        const rawData = (await readFile(`./inputs/${fileName}.txt`, 'utf8')).replace(/[.,":?”“!‘;']|\’|\[|\]|\(|\).*/g, '').split(/[\s]|―|-/);
 
         const bannedWords = await readFile('./banned-words.txt', 'utf8');
 
-        const dictionary = JSON.parse(await readFile('./dictionary/index.json', 'utf-8'))
+        const dictionary = JSON.parse(await readFile('./dictionary/index.json', 'utf-8'));
         const missingWords = [];
 
         //USING new Map() //Less performant than attemptB when dictionary parsing was implemented
